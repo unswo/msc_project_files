@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# pipeline
+#SBATCH -c 10
+#SBATCH --mem 30g
+#SBATCH --mail-type=ALL
+# Assumes all of these tools are availble on the command line or using the conda environments provided
+
+source ~/.bashrc
+
+conda activate majiq
+
+python ~/.conda/envs/majiq/lib/python3.6/site-packages/majiq/run_majiq.py build -j 20 -c $PROJECT/majiq_output/majiq_in/config.cfg -o $PROJECT/majiq_output/ $PROJECT/data/genome/gencode/gencode.v34.primary_assembly.annotation.gff3
+

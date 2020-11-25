@@ -1,0 +1,135 @@
+#!/bin/bash
+#
+# pipeline
+#SBATCH -c 10
+#SBATCH --mem 60g
+#SBATCH --mail-type=ALL
+# Assumes all of these tools are availble on the command line or using the conda environments provided
+
+# work around for samtools dependencies
+# change into the lib directory for the conda environment
+# ln -s libcrypto.so.1.1 libcrypto.so.1.0.0
+
+##Variables
+source ~/.bashrc
+conda_env="fusion_id"
+READS_DIR=$PWD
+FASTQC_OUTPUT=$PROJECT/data/fastqc_output/
+STAR_INDEX=$PROJECT/data/genome/gencode/hg38_index
+STAR_OUTPUT=$PROJECT/star_output
+CTAT_GENOME_LIB=$PROJECT/CTAT_lib/GRCh38_gencode_v34_CTAT_lib.source/ctat_genome_lib_build_dir
+FUSION_OUTPUT=$PROJECT/fusion_output
+STRINGTIE_OUTPUT=$PROJECT/stringtie_output
+GTF=$PROJECT/data/genome/gencode/gencode.v34.primary_assembly.annotation.gtf
+
+mkdir -p $FASTQC_OUTPUT/trimmed $STAR_OUTPUT/sorted_bams $FUSION_OUTPUT $STRINGTIE_OUTPUT
+
+module purge
+##QC
+# Detect TrimGalore previous output first
+if [ -f "${1}.trimmed.fq.gz" ] 
+then
+echo "Trimmed single end reads detected. Skipping QC..."
+elif [ -f "${1}_val_1.fq.gz" ] & [ -f "${1}_val_2.fq.gz" ]
+then
+echo "Trimmed paired end reads detected. Skipping QC..."
+else
+echo "No trimmed reads for ${1} detected. Proceeding with QC..."
+module load Java
+module load cutadapt
+
+fastqc -o $FASTQC_OUTPUT ${1}_*.fastq.gz && \
+trim_galore -j 4 -q 30 \
+--basename ${1} \
+--paired \
+--fastqc_args "--outdir $FASTQC_OUTPUT/trimmed" \
+${1}_*1.fastq.gz ${1}_*2.fastq.gz \
+|| \
+echo "QC failed. Please check input files exist."
+
+fi
+
+
+conda activate $conda_env && echo "Using conda environment $conda_env"
+
+if [ -f "$STAR_OUTPUT/sorted_bams/${1}.sorted.bam" ]
+then
+echo "Sorted bam found, skipping alignment..."
+else
+echo "No sorted bam found. Starting alignment..."
+##Align using STAR, prepare for star-fusion
+##Extra parameters as defined in star-fusion wiki
+STAR --genomeDir $STAR_INDEX \
+--readFilesIn ${1}_val_1.fq.gz ${1}_val_2.fq.gz \
+--outReadsUnmapped None \
+--runThreadN 8 \
+--outTmpDir $TMPDIR/tmp \
+--outFileNamePrefix $STAR_OUTPUT/${1}_ \
+--twopassMode Basic \
+--readFilesCommand "gunzip -c" \
+--outSAMstrandField intronMotif \
+--outSAMunmapped Within \
+--chimSegmentMin 12 \
+--chimJunctionOverhangMin 8 \
+--chimOutJunctionFormat 1 \
+--alignSJDBoverhangMin 10 \
+--alignMatesGapMax 100000 \
+--alignIntronMax 100000 \
+--alignSJstitchMismatchNmax 5 -1 5 5 \
+--outSAMattrRGline ID:GRPundef \
+--chimMultimapScoreRange 3 \
+--chimScoreJunctionNonGTAG -4 \
+--chimMultimapNmax 20 \
+--chimNonchimScoreDropMin 10 \
+--peOverlapNbasesMin 12 \
+--peOverlapMMp 0.1 \
+--alignInsertionFlush Right \
+--alignSplicedMateMapLminOverLmate 0 \
+--alignSplicedMateMapLmin 30 \
+&& \
+samtools sort $STAR_OUTPUT/${1}_Aligned.out.sam -o ${1}.sorted.bam 
+mv ${1}.sorted.bam $STAR_OUTPUT/sorted_bams/
+
+fi
+
+cd $TMPDIR
+
+STAR-Fusion --genome_lib_dir $CTAT_GENOME_LIB \
+-J $STAR_OUTPUT/${1}_Chimeric.out.junction \
+--output_dir $FUSION_OUTPUT/${1} 
+
+~/.conda/envs/fusion_id/lib/STAR-Fusion/FusionInspector/FusionInspector --fusions $FUSION_OUTPUT/${1}/star-fusion.fusion_predictions.abridged.tsv  \
+--out_prefix finspector  \
+--min_junction_reads 1  \
+--min_novel_junction_support 3 \
+--min_spanning_frags_only 5 \
+--vis \
+--max_promiscuity 10 \
+--output_dir /mnt/storage/nobackup/proj/rhidpco/fusion_output/${1}/FusionInspector \
+--genome_lib_dir $CTAT_GENOME_LIB \
+--CPU 8 \
+--include_Trinity  \
+--annotate \
+--left_fq $READS_DIR/${1}_val_1.fq.gz \
+--right_fq $READS_DIR/${1}_val_2.fq.gz
+
+echo "Starting stringtie..."
+
+stringtie $STAR_OUTPUT/sorted_bams/${1}.sorted.bam \
+-eB \
+-G $GTF \
+-o ${1}.gtf 
+
+mv {,${1}_}t_data.ctab
+mv {,${1}_}e_data.ctab
+mv {,${1}_}i_data.ctab
+mv {,${1}_}i2t.ctab
+mv {,${1}_}e2t.ctab
+
+mv *.ctab $STRINGTIE_OUTPUT
+mv ${1}.gtf $STRINGTIE_OUTPUT
+
+echo "Stringtie complete!"
+conda deactivate
+
+

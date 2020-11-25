@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# test
+#SBATCH --mail-type=END
+#SBATCH -p short
+
+module purge
+module load Anaconda2
+
+source ~/.bashrc
+
+conda activate star-fusion

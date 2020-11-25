@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# stringtie
+#SBATCH -c 8
+#SBATCH --mem 40g
+#SBATCH --mail-type=END
+#
+source ~/.bashrc
+conda activate fusion_id
+
+stringtie $(basename ${1}).sorted \
+-eB \
+-l $(basename ${1})
+-G $PROJECT/data/genome/gencode/gencode.v34.primary_assembly.annotation.gtf \
+-o $(basename ${1}) && \
+
+ 
+conda deactivate 

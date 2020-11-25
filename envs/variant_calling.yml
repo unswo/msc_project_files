@@ -1,0 +1,63 @@
+name: variant_calling
+channels:
+  - anaconda
+  - bioconda
+  - bioconda/noarch
+  - bioconda/linux-64
+  - defaults
+  - conda-forge
+dependencies:
+  - _libgcc_mutex=0.1=main
+  - bcftools=1.8=h4da6232_3
+  - bedtools=2.29.2=hc088bd4_0
+  - brotlipy=0.7.0=py36h8c4c3a4_1000
+  - bzip2=1.0.8=h7b6447c_0
+  - ca-certificates=2020.1.1=0
+  - certifi=2020.6.20=py36_0
+  - cffi=1.11.5=py36_0
+  - chardet=3.0.4=py36h9f0ad1d_1006
+  - cryptography=2.9.2=py36h45558ae_0
+  - curl=7.69.1=hbc83047_0
+  - gatk4=4.1.7.0=py38_0
+  - htslib=1.9=h4da6232_3
+  - idna=2.9=py_1
+  - igv-reports=0.9.8=py_1
+  - intervaltree=3.0.2=py_0
+  - krb5=1.17.1=h173b8e3_0
+  - ld_impl_linux-64=2.33.1=h53a641e_7
+  - libcurl=7.69.1=h20c2e04_0
+  - libdeflate=1.2=h516909a_1
+  - libedit=3.1.20181209=hc058e9b_0
+  - libffi=3.3=he6710b0_1
+  - libgcc=7.2.0=h69d50b8_2
+  - libgcc-ng=9.1.0=hdf63c60_0
+  - libssh2=1.9.0=h1ba5d50_1
+  - libstdcxx-ng=9.1.0=hdf63c60_0
+  - ncurses=6.2=he6710b0_1
+  - openjdk=8.0.152=h7b6447c_3
+  - openssl=1.1.1g=h7b6447c_0
+  - perl=5.26.2=h516909a_1006
+  - picard=2.18.14=0
+  - pip=20.1.1=py_1
+  - pycparser=2.20=py_0
+  - pyopenssl=19.1.0=py_1
+  - pysam=0.11.2.2=py36_1
+  - pysocks=1.7.1=py36h9f0ad1d_1
+  - python=3.6.10=h7579374_2
+  - python_abi=3.6=1_cp36m
+  - readline=8.0=h7b6447c_0
+  - requests=2.24.0=py_0
+  - samtools=1.7=1
+  - setuptools=47.3.1=py36h9f0ad1d_0
+  - six=1.15.0=py_0
+  - sortedcontainers=2.2.2=py_0
+  - sqlite=3.31.1=h62c20be_1
+  - star=2.7.2b=0
+  - tabix=0.2.6=ha92aebf_0
+  - tk=8.6.8=hbc83047_0
+  - urllib3=1.25.9=py_0
+  - wheel=0.34.2=py_1
+  - xz=5.2.5=h7b6447c_0
+  - zlib=1.2.11=h7b6447c_3
+prefix: /mnt/nfs/home/b9003384/.conda/envs/CTAT_mut
+

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# launches multiple sbatch jobs and is way more inefficient than a job array
+
+project=/mnt/storage/nobackup/proj/rhidpco/
+
+cd $project/STAR_output
+
+for file in $project/data/PRJNA249062/*;
+do
+name=$(basename $file)
+mkdir $name
+cd $name
+sbatch ~/scripts/star_align $file
+cd ..
+done

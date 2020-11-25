@@ -1,0 +1,7 @@
+SRRexamplefile_KO
+SRCexamplefile_WT
+SR3examplefile_KO
+SRDexamplefile_WT
+sample1
+sample2
+sample4

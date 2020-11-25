@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#launch multiple sbatch rsem jobs - should be a job array really
+
+project=/mnt/storage/nobackup/proj/rhidpco
+
+for file in $project/STAR_output/*;
+do
+cd $file
+run=$(basename $file)
+mkdir rsem_expression
+cd rsem_expression
+sbatch ~/scripts/rsem_expression $run
+cd ..
+done
+

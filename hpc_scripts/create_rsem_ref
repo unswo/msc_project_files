@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# create RSEM ref
+#SBATCH -c 10
+#SBATCH --mem 48g
+#SBATCH --mail-type=ALL
+
+source ~/.bashrc
+
+conda activate fusion_id
+project=/mnt/storage/nobackup/proj/rhidpco/
+cd $project
+
+mkdir rsem_ref_hg38
+
+cd $TMPDIR
+
+Starting job in directory `pwd`
+rsem-prepare-reference \
+--gtf $project/data/genome/gencode/gencode.v34.primary_assembly.annotation.gtf \
+--star \
+--star-sjdboverhang 100 \
+-p 10 \
+$project/data/genome/gencode/GRCh38.primary_assembly.genome.fa \
+$project/rsem_ref_hg38/hg38_
+
+echo Finishing job
